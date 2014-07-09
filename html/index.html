@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Wave Light Control</title>
+    <style type="text/css">
+        button {
+            display: block;
+            margin: 10px 5px 10px 5px;
+            width: 95%;
+            height: 120px;
+            font-size: 48pt;
+            color: black;
+        }
+    </style>
+    <script type="text/javascript">
+        function processProgram(program)
+        {
+            var xmlhttp;
+            if (window.XMLHttpRequest)
+            {
+                xmlhttp = new XMLHttpRequest();
+            }
+            else
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+
+            xmlhttp.open("POST", "/macros/setProgram/" + program, true);
+            xmlhttp.send();
+            
+        }
+
+        function processShow()
+        {
+            var xmlhttp;
+            if (window.XMLHttpRequest)
+            {
+                xmlhttp = new XMLHttpRequest();
+            }
+            else
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+
+            var payload = "melt:20;sparkle:30";
+            xmlhttp.open("POST", "/macros/setSchedule/" + payload, true);
+
+            xmlhttp.onreadystatechange = function() {
+                if (http.readyState == 4 && http.status == 200) {
+                    alert(http.responseText);
+                }
+            }
+
+            xmlhttp.send();
+            
+        }
+    </script>
+</head>
+<body>
+<div align="center">
+<div id="controls">
+    <button type="button" onclick="processProgram('sparkle')">sparkle</button>
+    <button type="button" onclick="processProgram('melt')">melt</button>
+    <button type="button" onclick="processProgram('sparklemelt')">sparklemelt</button>
+    <button type="button" onclick="processProgram('test')">test</button>
+    <button type="button" onclick="processShow()">blah</button>
+</div>
+</div>
+</body>
+</html>
+
