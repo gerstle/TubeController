@@ -3,66 +3,96 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Wave Light Control</title>
-    <style type="text/css">
-        button {
-            display: block;
-            margin: 10px 5px 10px 5px;
-            width: 95%;
-            height: 120px;
-            font-size: 48pt;
-            color: black;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css" type="text/css" media="Screen" />
+    <link rel="stylesheet" href="mobile.css" type="text/css" media="only screen and (max-device-width:480px)" />
+    <script src="/lib/jquery-2.1.1.js"></script>
+    <script src="wave_config.js"></script>
     <script type="text/javascript">
-        function processProgram(program)
+
+      $(document).ready(function() {
+        var contentDiv = $("#contentDiv");
+
+        // <cgerstle> setup programs
+        $.each(config.programs, function(index, value) {
+          var button = $('<button/>',
+          {
+              text: "program " + value,
+              click: function () { processProgram(value); },
+              class: "main"
+          });
+
+          contentDiv.append(button);
+        });
+
+        // <cgerstle> setup scheduled shows
+        $.each(config.schedules, function(index, value) {
+          button = createScheduleButton(value.name);
+          contentDiv.append(button);
+        });
+      });
+
+      function processProgram(program) {
+        $.post("/macros/setProgram/" + program, function(data) {
+          $("#result").html(data);
+        });
+      }
+
+      function processSchedule(scheduleName) {
+        var payload = "";
+        $.each(config.schedules, function(i, schedule) {
+          if (schedule.name == scheduleName) {
+            $.each(schedule.shows, function(j, show) {
+              payload += show.program + ":" + show.length + ";";
+            });
+
+            if (payload.length > 0)
+              payload = payload.substring(0, payload.length - 1);
+          }
+        });
+        
+        $.post("/macros/setSchedule/" + payload, function(data) {
+          $("#result").html(data);
+        });
+      }
+
+      function setupNewSchedule() {
+        var rawShows = $("#newSchedule").val().split(";");
+        var schedule = {
+          name: config.schedules.length + 1,
+          shows: []
+        };
+        $.each(rawShows, function(i, showStr) {
+          var rawShow = showStr.split(":");
+          var show = {
+            program: rawShow[0],
+            length: rawShow[1]
+          };
+          schedule.shows.push(show);
+        });
+        config.schedules.push(schedule);
+        $("#contentDiv").append(createScheduleButton(schedule.name));
+      }
+
+      function createScheduleButton(name) {
+        var button = $('<button/>',
         {
-            var xmlhttp;
-            if (window.XMLHttpRequest)
-            {
-                xmlhttp = new XMLHttpRequest();
-            }
-            else
-                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            text: "schedule " + name,
+            click: function () { processSchedule(name); },
+            class: "main"
+        });
 
-            xmlhttp.open("POST", "/macros/setProgram/" + program, true);
-            xmlhttp.send();
-            
-        }
-
-        function processShow()
-        {
-            var xmlhttp;
-            if (window.XMLHttpRequest)
-            {
-                xmlhttp = new XMLHttpRequest();
-            }
-            else
-                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-
-            var payload = "melt:20;sparkle:30";
-            xmlhttp.open("POST", "/macros/setSchedule/" + payload, true);
-
-            xmlhttp.onreadystatechange = function() {
-                if (http.readyState == 4 && http.status == 200) {
-                    alert(http.responseText);
-                }
-            }
-
-            xmlhttp.send();
-            
-        }
+        return button;
+      }
     </script>
 </head>
 <body>
-<div align="center">
-<div id="controls">
-    <button type="button" onclick="processProgram('sparkle')">sparkle</button>
-    <button type="button" onclick="processProgram('melt')">melt</button>
-    <button type="button" onclick="processProgram('sparklemelt')">sparklemelt</button>
-    <button type="button" onclick="processProgram('test')">test</button>
-    <button type="button" onclick="processShow()">blah</button>
-</div>
+<div id="resultDiv" class="result"></div>
+<div id="contentDiv"></div>
+<div id="newScheduleDiv" class="blah">
+  <div class="blah">new schedule</div>
+  <div class="grey blah">(format: &lt;program&gt;:&lt;seconds&gt;;...)</div>
+  <input id="newSchedule" type="text" class="blah" /><br />
+  <button onClick="setupNewSchedule()" class="blah">submit</button>
 </div>
 </body>
 </html>
-

@@ -1,0 +1,16 @@
+button.main {
+    display: block;
+    margin: 10px 5px 10px 5px;
+    color: black;
+}
+.result {
+    border: 1px grey solid;
+}
+input {
+    width: 90%;
+}
+.grey {
+    color: grey;
+}
+.blah {
+}

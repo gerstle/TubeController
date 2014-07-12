@@ -17,6 +17,10 @@ schedule = []
 currentShow = -1 
 showStartTime = 0
 
+fadeOutShow = Show()
+fadeOutShow.program = 'fadeOut'
+fadeOutShow.length = 2
+
 def setup():
     # empty input buffer before starting processing
     while (serial.available() > 0):
@@ -32,6 +36,9 @@ def loop():
         #webiopi.debug("running schedule")
         currentTime = int(time.time())
         if (currentShow == -1) or ((currentTime - showStartTime) > schedule[currentShow].length):
+            # currentShow == -1 means we're starting a schedule for the first time... give time to fade out of previous
+            time.sleep(2);
+            
             currentShow += 1
 
             if currentShow >= len(schedule):
@@ -49,6 +56,13 @@ def setProgram(program):
     global schedule
     schedule = []
 
+    # send fade out to end the current thing smoothly
+    serial.writeString('fadeOut')
+    serial.writeString("\r")
+
+    # I hate delays, but whatever...
+    time.sleep(2);
+
     serial.writeString(program)
     serial.writeString("\r")
 
@@ -59,7 +73,9 @@ def setSchedule(newSchedule):
     global schedule
     global currentShow
     global showStartTime
+    global fadeOutShow
 
+    del schedule[:]
     programs = newSchedule.split(";")
 
     for p in programs:
@@ -70,7 +86,14 @@ def setSchedule(newSchedule):
         webiopi.debug("adding show '" + newShow.program + "' for " + str(newShow.length) + " seconds");
         schedule.append(newShow)
 
+        # append a fadeOut for every program... fadeIn is added by the controller
+        schedule.append(fadeOutShow)
+
     currentShow = -1
     showStartTime = int(time.time())
+
+    # send fade out to end the current thing smoothly
+    serial.writeString('fadeOut')
+    serial.writeString("\r")
 
     return 1 
