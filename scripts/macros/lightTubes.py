@@ -46,6 +46,7 @@ def loop():
 
             showStartTime = currentTime
             webiopi.debug("next show: " + schedule[currentShow].program + " for " + str(schedule[currentShow].length) + " seconds");
+            serial.writeString("p:")
             serial.writeString(schedule[currentShow].program)
             serial.writeString("\r")
 
@@ -57,12 +58,12 @@ def setProgram(program):
     schedule = []
 
     # send fade out to end the current thing smoothly
-    serial.writeString('fadeOut')
+    serial.writeString('p:fadeOut')
     serial.writeString("\r")
 
-    # I hate delays, but whatever...
     time.sleep(2);
 
+    serial.writeString("p:")
     serial.writeString(program)
     serial.writeString("\r")
 
@@ -93,7 +94,7 @@ def setSchedule(newSchedule):
     showStartTime = int(time.time())
 
     # send fade out to end the current thing smoothly
-    serial.writeString('fadeOut')
+    serial.writeString('p:fadeOut')
     serial.writeString("\r")
 
     return 1 

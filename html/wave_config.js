@@ -5,7 +5,7 @@ var config = {
     "sparklemelt",
     "test",
     "fadeOut",
-    "blue"
+    "red"
   ],
   schedules: [
     {
