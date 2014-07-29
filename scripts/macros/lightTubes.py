@@ -27,6 +27,26 @@ def setup():
     while (serial.available() > 0):
         serial.readString()
 
+    # setup an initial schedule
+    newShow = Show()
+    newShow.program = "melt"
+    newShow.length = 1200
+    schedule.append(newShow)
+    schedule.append(fadeOutShow)
+
+    newShow = Show()
+    newShow.program = "melt sparkle"
+    newShow.length = 1200
+    schedule.append(newShow)
+    schedule.append(fadeOutShow)
+
+    currentShow = -1
+    showStartTime = int(time.time())
+
+    # send fade out to end the current thing smoothly
+    serial.writeString('push fadeout')
+    serial.writeString("\r")
+
 def loop():
     global schedule
     global currentShow
