@@ -1,5 +1,6 @@
 import webiopi
 import time
+import urllib
 
 # import Serial driver
 from webiopi.devices.serial import Serial
@@ -18,7 +19,7 @@ currentShow = -1
 showStartTime = 0
 
 fadeOutShow = Show()
-fadeOutShow.program = 'fadeOut'
+fadeOutShow.program = 'fadeout'
 fadeOutShow.length = 2
 
 def setup():
@@ -37,17 +38,25 @@ def loop():
         currentTime = int(time.time())
         if (currentShow == -1) or ((currentTime - showStartTime) > schedule[currentShow].length):
             # currentShow == -1 means we're starting a schedule for the first time... give time to fade out of previous
-            time.sleep(2);
+            if (currentShow == -1):
+                time.sleep(2)
             
             currentShow += 1
 
-            if currentShow >= len(schedule):
+            if (currentShow >= len(schedule)):
                 currentShow = 0
 
             showStartTime = currentTime
             webiopi.debug("next show: " + schedule[currentShow].program + " for " + str(schedule[currentShow].length) + " seconds");
-            serial.writeString("p:")
+
+            if (schedule[currentShow].program != 'fadeout'):
+                serial.writeString("program ")
+            else:
+                serial.writeString("push ")
+
             serial.writeString(schedule[currentShow].program)
+            if (schedule[currentShow].program != 'fadeout'):
+                serial.writeString(" fadein")
             serial.writeString("\r")
 
     webiopi.sleep(1)
@@ -58,13 +67,14 @@ def setProgram(program):
     schedule = []
 
     # send fade out to end the current thing smoothly
-    serial.writeString('p:fadeOut')
+    serial.writeString('push fadeout')
     serial.writeString("\r")
 
     time.sleep(2);
 
-    serial.writeString("p:")
-    serial.writeString(program)
+    serial.writeString("program ")
+    serial.writeString(urllib.parse.unquote(program))
+    serial.writeString(" fadein")
     serial.writeString("\r")
 
     return 1
@@ -82,19 +92,19 @@ def setSchedule(newSchedule):
     for p in programs:
         parts = p.split(":");
         newShow = Show()
-        newShow.program = parts[0]
+        newShow.program = urllib.parse.unquote(parts[0])
         newShow.length = int(parts[1])
         webiopi.debug("adding show '" + newShow.program + "' for " + str(newShow.length) + " seconds");
         schedule.append(newShow)
 
-        # append a fadeOut for every program... fadeIn is added by the controller
+        # append a fadeOut for every program... fadeIn is added by the loop above 
         schedule.append(fadeOutShow)
 
     currentShow = -1
     showStartTime = int(time.time())
 
     # send fade out to end the current thing smoothly
-    serial.writeString('p:fadeOut')
+    serial.writeString('push fadeout')
     serial.writeString("\r")
 
     return 1 

@@ -2,9 +2,9 @@ var config = {
   programs: [
     "melt",
     "sparkle",
-    "sparklemelt",
+    "melt sparkle",
     "test",
-    "fadeOut",
+    "fadeout",
     "red"
   ],
   schedules: [
@@ -13,24 +13,11 @@ var config = {
       shows: [
         {
           program: 'melt',
-          length: 10
+          length: 1200
         },
         {
-          program: 'sparkle',
-          length: 20
-        }
-      ]
-    },
-    {
-      name: "blah",
-      shows: [
-        {
-          program: 'melt',
-          length: 10
-        },
-        {
-          program: 'test',
-          length: 20
+          program: 'melt sparkle',
+          length: 1200
         }
       ]
     }
